@@ -1,3 +1,4 @@
+import openai
 import sqlite3
 import pandas as pd
 import os
@@ -14,6 +15,23 @@ csv_files = {
     "pitching": "2024pitching.csv",
     "teamstats": "2024teamstats.csv"
 }
+
+# Set OpenAI API Key
+OPENAI_API_KEY = "your-api-key-here"
+
+# Define function to generate SQL query from natural language
+def generate_sql_query(user_input):
+    prompt = f"Convert the following natural language request into a SQL query for an SQLite database:\n\nRequest: {user_input}\nSQL Query:"
+    
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",  # Most accurate for queries
+        messages=[{"role": "system", "content": "You are an expert in SQL query generation."},
+                  {"role": "user", "content": prompt}],
+        temperature=0  # Stable results
+    )
+
+    query = response["choices"][0]["message"]["content"].strip()
+    return query
 
 # Create SQLite database connection
 conn = sqlite3.connect("baseball.db")

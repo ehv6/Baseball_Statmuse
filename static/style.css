@@ -1,0 +1,74 @@
+:root {
+    --primary-color: #152238;
+    --accent-color: #d4af37;
+    --text-color: #ffffff;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.search-box {
+    max-width: 800px;
+    margin: 0 auto 30px;
+    display: flex;
+    gap: 10px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid var(--accent-color);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+button {
+    padding: 15px 30px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 25px;
+    color: var(--primary-color);
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+.results-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+th {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Baseball StatAI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>⚾ Baseball StatAI</h1>
+        <p>Ask natural language questions about 2024 MLB stats</p>
+    </header>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" id="queryInput" placeholder="Who has the most home runs?">
+            <button onclick="executeQuery()">Search</button>
+        </div>
+        
+        <div id="results" class="results-container">
+            <!-- Results will be injected here -->
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

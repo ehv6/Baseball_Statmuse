@@ -1,20 +1,33 @@
 import sqlite3
 import pandas as pd
+import os
 
-# Define data file paths
-filepath_batting = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files/2024batting.csv"
-filepath_players = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files/2024allplayers.csv"
+# Define base directory where CSV files are stored
+base_dir = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files"
+
+# List of CSV files to load (mapping table names to file names)
+csv_files = {
+    "players": "2024allplayers.csv",
+    "batting": "2024batting.csv",
+    "fielding": "2024fielding.csv",
+    "gameinfo": "2024gameinfo.csv",
+    "pitching": "2024pitching.csv",
+    "teamstats": "2024teamstats.csv"
+}
 
 # Create SQLite database connection
 conn = sqlite3.connect("baseball.db")
 
-# Load CSV data into Pandas DataFrames
-batting_df = pd.read_csv(filepath_batting)
-players_df = pd.read_csv(filepath_players)
+# Load each CSV file into a Pandas DataFrame and store it in SQL
+tables_loaded = []
+for table_name, file_name in csv_files.items():
+    file_path = os.path.join(base_dir, file_name)
+    df = pd.read_csv(file_path)
+    df.to_sql(table_name, conn, if_exists="replace", index=False)
+    tables_loaded.append(table_name)
+    print(f"Loaded {table_name} from {file_name}")
 
-# Load data into SQL tables
-batting_df.to_sql("batting", conn, if_exists="replace", index=False)
-players_df.to_sql("players", conn, if_exists="replace", index=False)
+print("\nAll tables successfully loaded into the database.")
 
 # Query to find player with most HRs
 query = """

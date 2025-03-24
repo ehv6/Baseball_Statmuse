@@ -2,6 +2,7 @@ import openai
 import sqlite3
 import pandas as pd
 import os
+from dotenv import load_dotenv
 
 # Define base directory where CSV files are stored
 base_dir = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files"
@@ -16,21 +17,26 @@ csv_files = {
     "teamstats": "2024teamstats.csv"
 }
 
-# Set OpenAI API Key
-OPENAI_API_KEY = "your-api-key-here"
+# API key
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Define function to generate SQL query from natural language
 def generate_sql_query(user_input):
+    client = openai.OpenAI()  # Correct way to use OpenAI v1.0+
+
     prompt = f"Convert the following natural language request into a SQL query for an SQLite database:\n\nRequest: {user_input}\nSQL Query:"
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-4-turbo",  # Most accurate for queries
-        messages=[{"role": "system", "content": "You are an expert in SQL query generation."},
-                  {"role": "user", "content": prompt}],
-        temperature=0  # Stable results
+
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "You are an expert in SQL query generation."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0
     )
 
-    query = response["choices"][0]["message"]["content"].strip()
+    query = response.choices[0].message.content.strip()
     return query
 
 # Create SQLite database connection
@@ -47,23 +53,27 @@ for table_name, file_name in csv_files.items():
 
 print("\nAll tables successfully loaded into the database.")
 
-# Query to find player with most HRs
-query = """
-SELECT 
-  p.first || ' ' || p.last AS player_name,
-  SUM(b.b_hr) AS total_home_runs
-FROM batting b
-JOIN (SELECT DISTINCT id, first, last FROM players) p ON b.id = p.id
-WHERE b.gametype = 'regular'
-GROUP BY b.id
-ORDER BY total_home_runs DESC
-LIMIT 5;
-"""
+# Verify API key is loaded (for debugging)
+if not OPENAI_API_KEY:
+    raise ValueError("OpenAI API key not found. Make sure you have a valid .env file.")
 
-# Execute and print results
-result = pd.read_sql_query(query, conn)
-print("\nPlayer with the most home runs:")
-print(result)
+# Connect to SQLite database
+conn = sqlite3.connect("baseball.db")
+
+# Ask user for input
+user_input = input("Enter your baseball stats query in natural language: ")
+
+# Generate SQL query
+query = generate_sql_query(user_input)
+print("\nGenerated SQL Query:\n", query)
+
+# Execute the generated query
+try:
+    result = pd.read_sql_query(query, conn)
+    print("\nQuery Result:")
+    print(result)
+except Exception as e:
+    print("\nError executing query:", e)
 
 # Close the database connection
 conn.close()

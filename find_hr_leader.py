@@ -22,21 +22,57 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Define function to generate SQL query from natural language
-def generate_sql_query(user_input):
-    client = openai.OpenAI()  # Correct way to use OpenAI v1.0+
+import openai
+import re
 
-    prompt = f"Convert the following natural language request into a SQL query for an SQLite database:\n\nRequest: {user_input}\nSQL Query:"
+def generate_sql_query(user_input):
+    client = openai.OpenAI()
+
+    schema_context = """
+    Database Schema:
+    - players (id, last, first, bat, throw, team, ...)
+    - batting (gid, id, team, b_pa, b_ab, b_hr, ...)
+    - gameinfo (gid, visteam, hometeam, date, ...)
+    - pitching (gid, id, team, p_ipouts, p_er, ...)
+    - fielding (gid, id, team, d_pos, d_po, ...)
+    - teamstats (gid, team, inn1, ...)
+
+    Relationships:
+    - players.id = batting.id = pitching.id = fielding.id
+    - gameinfo.gid = batting.gid = pitching.gid = fielding.gid = teamstats.gid
+
+    Notes:
+    - Player names are split into 'first' and 'last' in the 'players' table.
+    - Use 'b_hr' for home runs in 'batting'.
+    - Dates are stored as strings (e.g., 20240320).
+    """
+
+    prompt = f"""
+    Convert the natural language request into an SQLite query using ONLY the following schema:
+    {schema_context}
+
+    Rules:
+    1. Use valid table/column names (e.g., 'players.first', not 'player_name').
+    2. Use explicit JOINs for multi-table queries (e.g., 'batting JOIN players ON batting.id = players.id').
+    3. Never assume columns like 'player_name'; concatenate 'first' and 'last' if needed.
+    4. Use 'b_hr' for home runs, not 'hr' or 'home_runs'.
+    5. allplayers.csv file can have multiple entries for one player so ensure player IDs are unique before the join operations, preventing duplication.
+
+    Request: {user_input}
+    SQL Query:
+    """
 
     response = client.chat.completions.create(
         model="gpt-4-turbo",
         messages=[
-            {"role": "system", "content": "You are an expert in SQL query generation."},
-            {"role": "user", "content": prompt},
+            {"role": "system", "content": "You are an expert SQL generator. Return ONLY the SQL query with no explanations or markdown."},
+            {"role": "user", "content": prompt}
         ],
         temperature=0
     )
 
     query = response.choices[0].message.content.strip()
+    query = re.sub(r"```sql|```", "", query).strip()
     return query
 
 # Create SQLite database connection

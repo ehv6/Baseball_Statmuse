@@ -3,6 +3,7 @@ import sqlite3
 import pandas as pd
 import os
 from dotenv import load_dotenv
+import re
 
 # Define base directory where CSV files are stored
 base_dir = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files"
@@ -22,16 +23,13 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Define function to generate SQL query from natural language
-import openai
-import re
-
 def generate_sql_query(user_input):
     client = openai.OpenAI()
 
     schema_context = """
     Database Schema:
     - players (id, last, first, bat, throw, team, ...)
-    - batting (gid, id, team, b_pa, b_ab, b_hr, ...)
+    - batting (gid, id, team, b_pa, b_ab, b_hr, gametype, ...)
     - gameinfo (gid, visteam, hometeam, date, ...)
     - pitching (gid, id, team, p_ipouts, p_er, ...)
     - fielding (gid, id, team, d_pos, d_po, ...)
@@ -47,16 +45,28 @@ def generate_sql_query(user_input):
     - Dates are stored as strings (e.g., 20240320).
     """
 
+    additional_rules = """
+    Additional Rules:
+    1. **Ensure Unique Player IDs Before Joins (MOST IMPORTANT RULE):**
+       The 'allplayers.csv' file (loaded into the 'players' table) may contain multiple entries for the same player.
+       Before performing any JOIN operations, ensure player IDs are unique by using a subquery or DISTINCT.
+       For example, use: JOIN (SELECT DISTINCT id, first, last FROM players) p ON b.id = p.id,
+       or aggregate batting data before joining.
+    2. The generated SQL query must always return at least 5 results.
+       If the natural query returns fewer than 5 rows, adjust the query (e.g., using a LIMIT clause or other techniques)
+       to ensure a minimum of 5 rows.
+    """
+
     prompt = f"""
     Convert the natural language request into an SQLite query using ONLY the following schema:
     {schema_context}
+    {additional_rules}
 
     Rules:
     1. Use valid table/column names (e.g., 'players.first', not 'player_name').
     2. Use explicit JOINs for multi-table queries (e.g., 'batting JOIN players ON batting.id = players.id').
     3. Never assume columns like 'player_name'; concatenate 'first' and 'last' if needed.
     4. Use 'b_hr' for home runs, not 'hr' or 'home_runs'.
-    5. allplayers.csv file can have multiple entries for one player so ensure player IDs are unique before the join operations, preventing duplication.
 
     Request: {user_input}
     SQL Query:

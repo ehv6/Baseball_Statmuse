@@ -1,15 +1,20 @@
-import openai
+from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS
 import sqlite3
 import pandas as pd
+import openai
 import os
-from dotenv import load_dotenv
 import re
+from dotenv import load_dotenv
 
-# Define base directory where CSV files are stored
-base_dir = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files"
+# Initialize environment and app
+load_dotenv()
+app = Flask(__name__)
+CORS(app)
 
-# List of CSV files to load (mapping table names to file names)
-csv_files = {
+# Configuration
+BASE_DIR = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files"
+CSV_FILES = {
     "players": "2024allplayers.csv",
     "batting": "2024batting.csv",
     "fielding": "2024fielding.csv",
@@ -18,9 +23,17 @@ csv_files = {
     "teamstats": "2024teamstats.csv"
 }
 
-# API key
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Initialize database
+def init_database():
+    conn = sqlite3.connect("baseball.db")
+    for table_name, file_name in CSV_FILES.items():
+        df = pd.read_csv(os.path.join(BASE_DIR, file_name))
+        df.to_sql(table_name, conn, if_exists="replace", index=False)
+    conn.close()
+    print("Database initialized")
+
+# Initialize once when app starts
+init_database()
 
 # Define function to generate SQL query from natural language
 def generate_sql_query(user_input):
@@ -85,41 +98,31 @@ def generate_sql_query(user_input):
     query = re.sub(r"```sql|```", "", query).strip()
     return query
 
-# Create SQLite database connection
-conn = sqlite3.connect("baseball.db")
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-# Load each CSV file into a Pandas DataFrame and store it in SQL
-tables_loaded = []
-for table_name, file_name in csv_files.items():
-    file_path = os.path.join(base_dir, file_name)
-    df = pd.read_csv(file_path)
-    df.to_sql(table_name, conn, if_exists="replace", index=False)
-    tables_loaded.append(table_name)
-    print(f"Loaded {table_name} from {file_name}")
+@app.route('/api/query', methods=['POST'])
+def handle_query():
+    try:
+        data = request.json
+        user_input = data.get('query')
+        query = generate_sql_query(user_input)
+        
+        with sqlite3.connect("baseball.db") as conn:
+            result = pd.read_sql_query(query, conn).to_dict(orient='records')
+            
+        return jsonify({
+            "query": query,
+            "results": result[:50]  # Limit results for safety
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-print("\nAll tables successfully loaded into the database.")
-
-# Verify API key is loaded (for debugging)
-if not OPENAI_API_KEY:
-    raise ValueError("OpenAI API key not found. Make sure you have a valid .env file.")
-
-# Connect to SQLite database
-conn = sqlite3.connect("baseball.db")
-
-# Ask user for input
-user_input = input("Enter your baseball stats query in natural language: ")
-
-# Generate SQL query
-query = generate_sql_query(user_input)
-print("\nGenerated SQL Query:\n", query)
-
-# Execute the generated query
-try:
-    result = pd.read_sql_query(query, conn)
-    print("\nQuery Result:")
-    print(result)
-except Exception as e:
-    print("\nError executing query:", e)
-
-# Close the database connection
-conn.close()
+if __name__ == '__main__':
+    # Verify API key
+    if not os.getenv("OPENAI_API_KEY"):
+        raise ValueError("Missing OpenAI API key")
+        
+    app.run(debug=True)

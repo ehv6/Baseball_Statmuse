@@ -68,14 +68,15 @@ def generate_sql_query(user_input):
          JOIN (SELECT DISTINCT id, first, last FROM players) AS p
          ON batting.id = p.id
          ```
-    2. **Minimum 5 Results**:
-       - If the natural query might return <5 rows, add `LIMIT 5` or relax filters.
-       - For aggregates (e.g., "top 5"), always include `LIMIT 5`.
     3. **Explicit Aliases**:
        - Always alias tables in JOINs (e.g., `batting b JOIN players p`).
     4. **Error Prevention**:
        - Use `TRIM()` on text comparisons to avoid whitespace issues.
        - Use `CAST(date AS TEXT)` when filtering dates.
+    5. **Team Codes**:
+        - Always use official 3-letter team codes (e.g., 'LAN' for Dodgers, 'NYA' for Yankees).
+    6. **Avoid Redundant JOINs**:
+        - Use `gameinfo.gametype` directly; no need to join `teamstats` for playoff checks.
     """
 
     prompt = f"""
@@ -90,21 +91,58 @@ def generate_sql_query(user_input):
     4. Handle playoff games with `gametype IN (...)`.
 
     Examples:
-    - "Ronald Acuna's home runs":
+    - "List all of Ronald Acuna's home runs":
       ```
-      SELECT p.first || ' ' || p.last AS player_name, SUM(b.b_hr) AS total_hr
+      SELECT 
+        p.first || ' ' || p.last AS player_name,
+        g.date,
+        CASE 
+          WHEN b.team = g.hometeam THEN 'vs ' || g.visteam
+          ELSE 'at ' || g.visteam
+        END AS matchup,
+        b.b_hr AS home_runs
       FROM (SELECT DISTINCT id, first, last FROM players) p
       JOIN batting b ON p.id = b.id
-      WHERE p.last = 'Acuna' AND p.first = 'Ronald'
-      GROUP BY p.id
-      LIMIT 5
+      JOIN gameinfo g ON b.gid = g.gid
+      WHERE p.last = 'Acuna' 
+        AND p.first = 'Ronald'
+        AND b.b_hr > 0
+      ORDER BY g.date DESC
       ```
 
     - "Games in March 2024":
       ```
       SELECT * FROM gameinfo
       WHERE date BETWEEN '20240301' AND '20240331'
-      LIMIT 5
+      ```
+    
+    - "List all Dodgers players with at least 10 home runs"
+    ```
+    SELECT p.first || ' ' || p.last AS player_name, SUM(b.b_hr) AS total_hr
+    FROM (SELECT DISTINCT id, first, last FROM players WHERE team = 'LAN') p
+    JOIN batting b ON p.id = b.id
+    GROUP BY p.id
+    HAVING SUM(b.b_hr) >= 10
+    ``` 
+    
+    - "Show me all the Yankees playoff games"
+    ```sql
+    SELECT g.gid, g.date, g.visteam, g.hometeam
+    FROM gameinfo g
+    WHERE (g.visteam = 'NYA' OR g.hometeam = 'NYA')
+    AND g.gametype IN ('wildcard', 'divisionseries', 'lcs', 'worldseries')
+    ```  
+
+    - "Pitchers with the most strikeouts":
+      ```
+      SELECT 
+        p.first || ' ' || p.last AS pitcher_name,
+        pi.team,
+        SUM(pi.p_k) AS total_strikeouts
+      FROM (SELECT DISTINCT id, first, last FROM players) p
+      JOIN pitching pi ON p.id = pi.id
+      GROUP BY p.id
+      ORDER BY total_strikeouts DESC
       ```
 
     Request: {user_input}

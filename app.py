@@ -53,43 +53,66 @@ def generate_sql_query(user_input):
     - gameinfo.gid = batting.gid = pitching.gid = fielding.gid = teamstats.gid
 
     Notes:
-    - Player names are split into 'first' and 'last' in the 'players' table.
-    - Use 'b_hr' for home runs in 'batting'.
-    - Dates are stored as strings (e.g., 20240320).
+    - Player names: Use `first || ' ' || last` for full names (e.g., "SELECT first || ' ' || last AS player_name").
+    - Dates: Stored as YYYYMMDD strings. Use string comparisons like `date BETWEEN '20240301' AND '20240331'` for March 2024.
+    - Home runs: Always use `b_hr` from the `batting` table.
+    - Playoff games: Defined as gametype IN ('wildcard', 'divisionseries', 'lcs', 'worldseries').
     """
 
     additional_rules = """
-    Additional Rules:
-    1. **Ensure Unique Player IDs Before Joins (MOST IMPORTANT RULE):**
-       The 'allplayers.csv' file (loaded into the 'players' table) may contain multiple entries for the same player.
-       Before performing any JOIN operations, ensure player IDs are unique by using a subquery or DISTINCT.
-       For example, use: JOIN (SELECT DISTINCT id, first, last FROM players) p ON b.id = p.id,
-       or aggregate batting data before joining.
-    2. The generated SQL query must always return at least 5 results.
-       If the natural query returns fewer than 5 rows, adjust the query (e.g., using a LIMIT clause or other techniques)
-       to ensure a minimum of 5 rows.
-    3. **Game Type Categorization Rule:**
-       - The 'gametype' column can have the following values: 'regular', 'wildcard', 'divisionseries', 'lcs', 'worldseries'.
-       - Any value other than 'regular' should be considered part of the playoffs.
+    Critical Rules:
+    1. **Player ID Deduplication**:
+       - Use subqueries to ensure unique player IDs before JOINs. Example:
+         ```
+         SELECT * FROM batting
+         JOIN (SELECT DISTINCT id, first, last FROM players) AS p
+         ON batting.id = p.id
+         ```
+    2. **Minimum 5 Results**:
+       - If the natural query might return <5 rows, add `LIMIT 5` or relax filters.
+       - For aggregates (e.g., "top 5"), always include `LIMIT 5`.
+    3. **Explicit Aliases**:
+       - Always alias tables in JOINs (e.g., `batting b JOIN players p`).
+    4. **Error Prevention**:
+       - Use `TRIM()` on text comparisons to avoid whitespace issues.
+       - Use `CAST(date AS TEXT)` when filtering dates.
     """
 
     prompt = f"""
-    Convert the natural language request into an SQLite query using ONLY the following schema:
+    Convert this request into a SQLite query using ONLY the provided schema.
     {schema_context}
     {additional_rules}
 
-    Rules:
-    1. Use valid table/column names (e.g., 'players.first', not 'player_name').
-    2. Use explicit JOINs for multi-table queries (e.g., 'batting JOIN players ON batting.id = players.id').
-    3. Never assume columns like 'player_name'; concatenate 'first' and 'last' if needed.
-    4. Use 'b_hr' for home runs, not 'hr' or 'home_runs'.
+    Requirements:
+    1. Use valid table/column names exactly as defined.
+    2. Return raw columns (no markdown/formatting).
+    3. For player names, concatenate `first` and `last`.
+    4. Handle playoff games with `gametype IN (...)`.
+
+    Examples:
+    - "Ronald Acuna's home runs":
+      ```
+      SELECT p.first || ' ' || p.last AS player_name, SUM(b.b_hr) AS total_hr
+      FROM (SELECT DISTINCT id, first, last FROM players) p
+      JOIN batting b ON p.id = b.id
+      WHERE p.last = 'Acuna' AND p.first = 'Ronald'
+      GROUP BY p.id
+      LIMIT 5
+      ```
+
+    - "Games in March 2024":
+      ```
+      SELECT * FROM gameinfo
+      WHERE date BETWEEN '20240301' AND '20240331'
+      LIMIT 5
+      ```
 
     Request: {user_input}
     SQL Query:
     """
 
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4",
         messages=[
             {"role": "system", "content": "You are an expert SQL generator. Return ONLY the SQL query with no explanations or markdown."},
             {"role": "user", "content": prompt}

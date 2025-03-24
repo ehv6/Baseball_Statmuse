@@ -2,8 +2,8 @@ import sqlite3
 import pandas as pd
 
 # Define data file paths
-filepath_batting = "/Users/tushigbattulga/Downloads/2024csvs_files/2024batting.csv"
-filepath_players = "/Users/tushigbattulga/Downloads/2024csvs_files/2024allplayers.csv"
+filepath_batting = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files/2024batting.csv"
+filepath_players = "/Users/tushigbattulga/Desktop/Personal Projects/Baseball_Statmuse/2024csvs_files/2024allplayers.csv"
 
 # Create SQLite database connection
 conn = sqlite3.connect("baseball.db")
@@ -22,10 +22,11 @@ SELECT
   p.first || ' ' || p.last AS player_name,
   SUM(b.b_hr) AS total_home_runs
 FROM batting b
-JOIN players p ON b.id = p.id
+JOIN (SELECT DISTINCT id, first, last FROM players) p ON b.id = p.id
+WHERE b.gametype = 'regular'
 GROUP BY b.id
 ORDER BY total_home_runs DESC
-LIMIT 1;
+LIMIT 5;
 """
 
 # Execute and print results

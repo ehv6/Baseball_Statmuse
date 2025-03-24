@@ -68,6 +68,9 @@ def generate_sql_query(user_input):
     2. The generated SQL query must always return at least 5 results.
        If the natural query returns fewer than 5 rows, adjust the query (e.g., using a LIMIT clause or other techniques)
        to ensure a minimum of 5 rows.
+    3. **Game Type Categorization Rule:**
+       - The 'gametype' column can have the following values: 'regular', 'wildcard', 'divisionseries', 'lcs', 'worldseries'.
+       - Any value other than 'regular' should be considered part of the playoffs.
     """
 
     prompt = f"""

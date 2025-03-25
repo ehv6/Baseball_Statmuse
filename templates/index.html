@@ -5,106 +5,192 @@
     <title>Baseball StatAI</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        /* Dark green background like a baseball field */
-        body {
-            background-color: #154734;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
+        :root {
+            --field-green: #154734;
+            --gold-accent: #FFC72C;
+            --dark-gold: #E0B020;
+            --text-white: #f4f4f4;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        /* GitHub link at the top left */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--field-green);
+            color: var(--text-white);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            flex-grow: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 3%;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header h1 .baseball-icon {
+            font-size: 1.2em;
+        }
+
+        .query-prompt {
+            font-size: 1.2em;
+            color: var(--gold-accent);
+            font-weight: 500;
+            margin-bottom: 18px;
+        }
+
+        .search-container {
+            display: flex;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            font-size: 1em;
+            border: 2px solid var(--gold-accent);
+            border-right: none;
+            border-radius: 5px 0 0 5px;
+            background-color: rgba(255,255,255,0.1);
+            color: var(--text-white);
+        }
+
+        .search-button {
+            padding: 12px 15px; /* Reduced horizontal padding */
+            font-size: 0.9em; /* Slightly smaller font */
+            background-color: var(--gold-accent);
+            color: var(--field-green);
+            border: 2px solid var(--gold-accent);
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100px; /* Fixed width to make it narrower */
+        }
+
+        .search-button:hover {
+            background-color: var(--dark-gold);
+            border-color: var(--dark-gold);
+        }
+
+        .results-container {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: var(--gold-accent);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: var(--text-white);
+        }
+
         .github-link {
             position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 1em;
-            color: #FFD700; /* Gold */
+            top: 20px;
+            right: 20px;
+            color: var(--gold-accent);
             text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
         }
 
         .github-link:hover {
+            color: var(--text-white);
             text-decoration: underline;
         }
 
-        /* Add space between the title and the top of the page */
-        h1 {
-            margin-top: 60px;
-        }
+        @media (max-width: 600px) {
+            .search-container {
+                flex-direction: column;
+            }
 
-        /* Make button text bold and bigger */
-        button {
-            font-weight: bold;
-            font-size: 1.2em;
-            padding: 10px 20px;
-            background-color: #FFC72C; /* Yellow-Gold (Baseball Themed) */
-            color: black;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+            .search-input, .search-button {
+                width: 100%;
+                border-radius: 5px;
+            }
 
-        button:hover {
-            background-color: #E0B020; /* Slightly darker gold on hover */
-        }
-
-        /* Make the "Ask natural language..." text bigger and bold */
-        .query-prompt {
-            font-size: 1.3em;
-            font-weight: bold;
-        }
-
-        /* Style input box */
-        input {
-            padding: 10px;
-            font-size: 1em;
-            width: 50%;
-            border-radius: 5px;
-            border: none;
-        }
-
-        /* Link styling for visibility */
-        a {
-            color: #FFD700; /* Gold */
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Center the developer info in the footer */
-        .developer-info {
-            margin-top: 20px;
-            font-size: 0.9em;
+            .search-button {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="https://github.com/ehv6/Baseball_Statmuse" class="github-link" target="_blank">GitHub Repository</a>
+    <a href="https://github.com/ehv6/Baseball_Statmuse" class="github-link" target="_blank">GitHub</a>
+    
+    <div class="wrapper">
+        <header class="header">
+            <h1>
+                <span class="baseball-icon">⚾</span>
+                Baseball StatAI - StatMuse Mimic
+            </h1>
+            <p class="query-prompt">Ask any question about 2024 MLB stats in plain English!</p>
+        </header>
 
-    <header>
-        <h1>⚾ Baseball StatAI - Statmuse Replica</h1>
-        <p class="query-prompt">Ask natural language questions about 2024 MLB stats</p>
-    </header>
-
-    <div class="container">
-        <div class="search-box">
-            <input type="text" id="queryInput" placeholder="List the players with the most stolen bases in the playoffs">
-            <button onclick="executeQuery()">Search</button>
+        <div class="search-container">
+            <input type="text" class="search-input" id="queryInput" 
+                   placeholder="List the players with the most stolen bases in the playoffs">
+            <button class="search-button" onclick="executeQuery()">Search</button>
         </div>
-        
+
         <div id="results" class="results-container">
             <!-- Results will be injected here -->
         </div>
 
-        <footer>
-            <p><em>*All-time stats (1901-2024) are possible with the Main CSV file using this link:</em> 
-            <a href="https://www.retrosheet.org/downloads/othercsvs.html" target="_blank">Retrosheet Downloads</a></p>
-            
-            <p class="developer-info">
+        <footer class="footer">
+            <p>
+                <strong>*Application is scalable up to All-time stats (1901-2024), instructions in 
+                <a href="https://github.com/ehv6/Baseball_Statmuse" target="_blank">GitHub</a></strong>
+            </p>
+            <p>
+                Special thanks to 
+                <a href="https://www.retrosheet.org/downloads/othercsvs.html" target="_blank">RetroSheet</a> 
+                for providing MLB statistics and 
+                <a href="https://vercel.com" target="_blank">Vercel</a> 
+                for hosting the website
+            </p>
+            <p>
                 Developed and tested by 
                 <a href="https://www.linkedin.com/in/tushig-battulga/" target="_blank">Tushig Battulga</a>
             </p>

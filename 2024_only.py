@@ -25,21 +25,37 @@ CSV_FILES = {
 }
 
 def init_database():
-    """Initialize SQLite database with CSV data"""
+    """Initialize SQLite database with CSV data if all files exist, else skip.
+    Returns True if database was initialized, False otherwise."""
+    # Check if all CSV files exist
+    for file_name in CSV_FILES.values():
+        file_path = os.path.join(BASE_DIR, file_name)
+        if not os.path.exists(file_path):
+            print(f"CSV file {file_path} not found. Skipping database initialization.")
+            print("Using existing database as backup.")
+            return False
+
     conn = sqlite3.connect("2024_baseball.db")
     try:
         for table_name, file_name in CSV_FILES.items():
             file_path = os.path.join(BASE_DIR, file_name)
             df = pd.read_csv(file_path)
             df.to_sql(table_name, conn, if_exists="replace", index=False)
-        print("Database initialized successfully")
+        print("Database initialized successfully from CSV files.")
+        return True
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+        return False
     finally:
         conn.close()
 
 # Initialize database on app start
 print("Loading... Initializing the database. Please wait.")
-init_database()
-print("Database initialized successfully. Application is ready.")
+db_initialized = init_database()
+if db_initialized:
+    print("Database initialized successfully from CSV files. Application is ready.")
+else:
+    print("Using existing database. Application is ready.")
 
 # Constants for SQL generation
 SCHEMA_CONTEXT = """
@@ -216,4 +232,4 @@ def handle_query():
 if __name__ == '__main__':
     if not os.getenv("OPENAI_API_KEY"):
         raise ValueError("Missing OpenAI API key in environment variables")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)

@@ -1,3 +1,9 @@
 .env
-*.csv
-*.db
+
+allplayers.csv
+batting.csv
+fielding.csv
+gameinfo.csv
+pitching.csv
+teamstats.csv
+alltime_baseball.db

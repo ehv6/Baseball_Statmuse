@@ -6,6 +6,7 @@ import openai
 import os
 import re
 from dotenv import load_dotenv
+import serverless_wsgi
 
 # Initialize environment and app
 load_dotenv()
@@ -13,8 +14,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-BASE_DIR = os.path.join(os.path.expanduser("~"), "Desktop", "Personal Projects", 
-                       "Baseball_Statmuse", "2024csvs")
+BASE_DIR = os.path.join(os.path.dirname(__file__), "2024csvs")
+
 CSV_FILES = {
     "players": "2024allplayers.csv",
     "batting": "2024batting.csv",
@@ -233,3 +234,6 @@ if __name__ == '__main__':
     if not os.getenv("OPENAI_API_KEY"):
         raise ValueError("Missing OpenAI API key in environment variables")
     app.run(host='0.0.0.0', port=5001)
+    
+def vercel_handler(event, context):
+    return serverless_wsgi.handle_request(app, event, context)

@@ -34,3 +34,10 @@ gameinfo.csv
 pitching.csv
 teamstats.csv
 alltime_baseball.db
+
+all_time.py
+
+2024csvs/
+csvdownloads/
+test.py
+all_time.py

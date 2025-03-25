@@ -20,7 +20,6 @@ __pycache__/
 tests/
 test.py
 
-*.db
 *.sqlite
 
 .git/

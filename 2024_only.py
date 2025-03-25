@@ -66,7 +66,7 @@ Notes:
 ADDITIONAL_RULES = """
 Critical Rules:
 1. Player ID Deduplication: Use subqueries for distinct player IDs
-2. Show as many results as possible. Even if user asks for one result.
+2. Set limit to 25 on all searches
 3. Explicit Aliases: Use table aliases in JOINs
 4. Error Prevention: Use TRIM() and CAST() appropriately
 5. Team Codes: Use official 3-letter abbreviations
@@ -123,6 +123,33 @@ Examples:
     AND p.first = 'Shohei'
     AND b.b_hr > 0
     ORDER BY g.date DESC
+    
+- "Players with most regular season strikeouts":
+      ```
+      SELECT 
+        p.first || ' ' || p.last AS pitcher_name,
+        pi.team,
+        SUM(pi.p_k) AS total_strikeouts
+      FROM (SELECT DISTINCT id, first, last FROM players) p
+      JOIN pitching pi ON p.id = pi.id
+      JOIN gameinfo g ON pi.gid = g.gid
+      WHERE g.gametype = 'regular'
+      GROUP BY p.id
+      ORDER BY total_strikeouts DESC
+      ```
+- "Mike Trout's 2024 OPS (On-base Plus Slugging)":
+    ```
+    SELECT 
+    p.first || ' ' || p.last AS player_name,
+    (SUM(b.b_h + b.b_w + b.b_hbp) * 1.0 / NULLIF(SUM(b.b_ab + b.b_w + b.b_hbp + b.b_sf), 0)) + 
+    (SUM(b.b_h + (2 * b.b_d) + (3 * b.b_t) + (4 * b.b_hr)) * 1.0 / NULLIF(SUM(b.b_ab), 0)) AS ops
+    FROM (SELECT DISTINCT id, first, last FROM players WHERE last = 'Trout' AND first = 'Mike') p
+    JOIN batting b ON p.id = b.id
+    JOIN gameinfo g ON b.gid = g.gid
+    WHERE g.date BETWEEN '20240101' AND '20241231'
+    AND g.gametype = 'regular'
+    GROUP BY p.id
+    ```
 """
 
 def generate_sql_query(user_input):
@@ -174,7 +201,7 @@ def handle_query():
 
         return jsonify({
             "query": query,
-            "results": result[:15]  # Safety limit
+            "results": result[:25]  # Safety limit
         })
 
     except sqlite3.Error as e:

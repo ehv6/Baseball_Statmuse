@@ -66,7 +66,6 @@ Notes:
 ADDITIONAL_RULES = """
 Critical Rules:
 1. Player ID Deduplication: Use subqueries for distinct player IDs
-2. Always set limit = 50.
 3. Explicit Aliases: Use table aliases in JOINs
 4. Error Prevention: Use TRIM() and CAST() appropriately
 5. Team Codes: Use official 3-letter abbreviations

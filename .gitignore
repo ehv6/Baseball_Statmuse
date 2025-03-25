@@ -6,5 +6,7 @@ fielding.csv
 gameinfo.csv
 pitching.csv
 teamstats.csv
+
 alltime_baseball.db
+
 .vercel

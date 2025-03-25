@@ -7,6 +7,7 @@ import os
 import re
 from dotenv import load_dotenv
 import serverless_wsgi
+import shutil
 
 # Initialize environment and app
 load_dotenv()
@@ -14,6 +15,18 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
+BASE_DIR = os.path.join(os.path.dirname(__file__), "2024csvs")
+
+SOURCE_DB = "2024_baseball.db"
+TARGET_DB = "/tmp/2024_baseball.db"
+
+if os.path.exists(SOURCE_DB):
+    shutil.copy(SOURCE_DB, TARGET_DB)
+else:
+    print(f"{SOURCE_DB} not found. Skipping copy.")
+
+DATABASE_PATH = TARGET_DB
+
 BASE_DIR = os.path.join(os.path.dirname(__file__), "2024csvs")
 
 CSV_FILES = {
@@ -213,7 +226,7 @@ def handle_query():
 
         query = generate_sql_query(user_input)
 
-        with sqlite3.connect("2024_baseball.db") as conn:
+        with sqlite3.connect(DATABASE_PATH) as conn:
             result = pd.read_sql_query(query, conn).to_dict(orient='records')
 
         return jsonify({

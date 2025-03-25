@@ -7,19 +7,24 @@
 </head>
 <body>
     <header>
-        <h1>⚾ Baseball StatAI</h1>
-        <p>Ask natural language questions about MLB stats</p>
+        <h1>⚾ Baseball StatAI - Statmuse Replica</h1>
+        <p>Developed and tested by Tushig Battulga</p>
+        <p>Ask natural language questions about 2024 MLB stats</p>
     </header>
 
     <div class="container">
         <div class="search-box">
-            <input type="text" id="queryInput" placeholder="Who has the most home runs?">
+            <input type="text" id="queryInput" placeholder="List the players with the most stolen bases in the playoffs">
             <button onclick="executeQuery()">Search</button>
         </div>
         
         <div id="results" class="results-container">
             <!-- Results will be injected here -->
         </div>
+
+        <footer>
+            <p><em>*All-time stats possible with the main CSV file using this link:</em> <a href="https://www.retrosheet.org/downloads/othercsvs.html" target="_blank">Retrosheet Downloads</a></p>
+        </footer>
     </div>
 
     <script src="/static/script.js"></script>

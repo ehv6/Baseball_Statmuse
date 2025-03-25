@@ -5,17 +5,89 @@
     <title>Baseball StatAI</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        /* Add this style to make the button text bold */
+        /* Dark green background like a baseball field */
+        body {
+            background-color: #154734;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* GitHub link at the top left */
+        .github-link {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 1em;
+            color: #FFD700; /* Gold */
+            text-decoration: none;
+        }
+
+        .github-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Add space between the title and the top of the page */
+        h1 {
+            margin-top: 60px;
+        }
+
+        /* Make button text bold and bigger */
         button {
             font-weight: bold;
+            font-size: 1.2em;
+            padding: 10px 20px;
+            background-color: #FFC72C; /* Yellow-Gold (Baseball Themed) */
+            color: black;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #E0B020; /* Slightly darker gold on hover */
+        }
+
+        /* Make the "Ask natural language..." text bigger and bold */
+        .query-prompt {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        /* Style input box */
+        input {
+            padding: 10px;
+            font-size: 1em;
+            width: 50%;
+            border-radius: 5px;
+            border: none;
+        }
+
+        /* Link styling for visibility */
+        a {
+            color: #FFD700; /* Gold */
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Center the developer info in the footer */
+        .developer-info {
+            margin-top: 20px;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
+    <a href="https://github.com/ehv6/Baseball_Statmuse" class="github-link" target="_blank">GitHub Repository</a>
+
     <header>
         <h1>⚾ Baseball StatAI - Statmuse Replica</h1>
-        <p>Developed and tested by Tushig Battulga</p>
-        <p>Ask natural language questions about 2024 MLB stats</p>
+        <p class="query-prompt">Ask natural language questions about 2024 MLB stats</p>
     </header>
 
     <div class="container">
@@ -29,7 +101,13 @@
         </div>
 
         <footer>
-            <p><em>*All-time stats possible with the main CSV file using this link:</em> <a href="https://www.retrosheet.org/downloads/othercsvs.html" target="_blank">Retrosheet Downloads</a></p>
+            <p><em>*All-time stats (1901-2024) are possible with the Main CSV file using this link:</em> 
+            <a href="https://www.retrosheet.org/downloads/othercsvs.html" target="_blank">Retrosheet Downloads</a></p>
+            
+            <p class="developer-info">
+                Developed and tested by 
+                <a href="https://www.linkedin.com/in/tushig-battulga/" target="_blank">Tushig Battulga</a>
+            </p>
         </footer>
     </div>
 

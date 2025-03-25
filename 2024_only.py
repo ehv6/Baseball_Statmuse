@@ -101,7 +101,7 @@ Examples:
         p.first || ' ' || p.last AS pitcher_name,
         pi.team,
         SUM(pi.p_k) AS total_strikeouts
-      FROM (SELECT DISTINCT id, first, last FROM players) p
+      FROM (SELECT DISTINCT id, first, last FROM players)
       JOIN pitching pi ON p.id = pi.id
       GROUP BY p.id
       ORDER BY total_strikeouts DESC
@@ -216,5 +216,4 @@ def handle_query():
 if __name__ == '__main__':
     if not os.getenv("OPENAI_API_KEY"):
         raise ValueError("Missing OpenAI API key in environment variables")
-
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)

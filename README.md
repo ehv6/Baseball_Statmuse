@@ -19,9 +19,10 @@ To expand the project to include all-time statistics, follow these steps:
 2. **Download the `Main.csv` file**  
    - Visit the website link found in `index.html`.
    - Download the `Main.csv` file.
+   - Unzip the file if needed to obtain 'csvdownloads'
 
-3. **Place `Main.csv` in the root directory**  
-   Ensure `Main.csv` is placed in the same directory as `all_time.py`.
+3. **Place `csvdownloads` in the root directory**  
+   Ensure `csvdownloads` is placed in the same directory as `all_time.py`.
 
 4. **Run the script to process all-time stats**  
    ```sh
@@ -95,7 +96,10 @@ After completing these steps, the application will support MLB statistics from 1
 ## 🌟 Data Source
 
 All statistics are sourced from [RetroSheet](https://www.retrosheet.org/downloads/othercsvs.html).
-
+     The information used here was obtained free of
+     charge from and is copyrighted by Retrosheet.  Interested
+     parties may contact Retrosheet at 20 Sunset Rd.,
+     Newark, DE 19711.
 ---
 
 ## 🛠️ Development

@@ -2,7 +2,7 @@
 
 Baseball StatAI is a web application that allows users to query MLB statistics using natural language, similar to StatMuse. The application is designed for the 2024 MLB season but can be scaled to include all-time statistics from 1901-2024.
 
-## 🤩 Regular Usage is available through a web aaplication hosted by Vercel
+## 🤩 Regular Usage is available through a Web Application hosted by Vercel
 https://baseball-statmuse.vercel.app
 
 
